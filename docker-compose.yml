@@ -1,0 +1,55 @@
+services:
+  cognee:
+    image: cognee/cognee:1.4.2
+    restart: always
+    environment:
+      - HOST=0.0.0.0
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - REQUIRE_AUTHENTICATION=true
+      # LLM: DeepSeek V4 Pro via OpenRouter
+      - LLM_PROVIDER=custom
+      - LLM_MODEL=openrouter/deepseek/deepseek-v4-pro-0813
+      - LLM_ENDPOINT=https://openrouter.ai/api/v1
+      - LLM_API_KEY=${LLM_API_KEY}
+      # Embeddings: Voyage AI voyage-4-large (OpenAI-compatible endpoint)
+      - EMBEDDING_PROVIDER=openai_compatible
+      - EMBEDDING_ENDPOINT=https://api.voyageai.com/v1
+      - EMBEDDING_MODEL=voyage-4-large
+      - EMBEDDING_API_KEY=${VOYAGE_API_KEY}
+      - EMBEDDING_DIMENSIONS=1024
+      # Postgres for relational + pgvector; Kuzu (file-based) for the graph
+      - DB_PROVIDER=postgres
+      - DB_HOST=cognee-postgres
+      - DB_PORT=5432
+      - DB_NAME=cognee_db
+      - DB_USERNAME=cognee
+      - DB_PASSWORD=${DB_PASSWORD}
+      - VECTOR_DB_PROVIDER=pgvector
+      - GRAPH_DATABASE_PROVIDER=kuzu
+    volumes:
+      - /srv/cognee/data:/app/.cognee_system
+    depends_on:
+      cognee-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  cognee-postgres:
+    image: pgvector/pgvector:pg17
+    restart: always
+    environment:
+      - POSTGRES_USER=cognee
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=cognee_db
+    volumes:
+      - /srv/cognee/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cognee -d cognee_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
