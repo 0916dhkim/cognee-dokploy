@@ -26,6 +26,11 @@ services:
       - DB_USERNAME=cognee
       - DB_PASSWORD=${DB_PASSWORD}
       - VECTOR_DB_PROVIDER=pgvector
+      - VECTOR_DB_HOST=cognee-postgres
+      - VECTOR_DB_PORT=5432
+      - VECTOR_DB_NAME=cognee_db
+      - VECTOR_DB_USERNAME=cognee
+      - VECTOR_DB_PASSWORD=${DB_PASSWORD}
       - GRAPH_DATABASE_PROVIDER=kuzu
     volumes:
       - /srv/cognee/data:/app/.cognee_system
