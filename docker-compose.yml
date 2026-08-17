@@ -7,6 +7,8 @@ services:
       - ENVIRONMENT=production
       - LOG_LEVEL=INFO
       - REQUIRE_AUTHENTICATION=true
+      # Preflight connection test times out against cloud endpoints; skip it
+      - COGNEE_SKIP_CONNECTION_TEST=true
       # LLM: DeepSeek V4 Pro via OpenRouter
       - LLM_PROVIDER=custom
       - LLM_MODEL=openrouter/deepseek/deepseek-v4-pro-0813
