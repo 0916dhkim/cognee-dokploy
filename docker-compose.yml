@@ -37,13 +37,7 @@ services:
     volumes:
       - /srv/cognee/data:/app/.cognee_system
     depends_on:
-  voyage-proxy:
-    build: ./voyage-proxy
-    restart: always
-    environment:
-      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
-
-  cognee-postgres:
+      cognee-postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -51,6 +45,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  voyage-proxy:
+    build: ./voyage-proxy
+    restart: always
+    environment:
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
 
   cognee-postgres:
     image: pgvector/pgvector:pg17
