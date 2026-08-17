@@ -35,7 +35,8 @@ services:
       - VECTOR_DB_PASSWORD=${DB_PASSWORD}
       - GRAPH_DATABASE_PROVIDER=kuzu
     volumes:
-      - /srv/cognee/data:/app/.cognee_system
+      - /srv/cognee/data:/app/cognee/.cognee_system
+      - /srv/cognee/data-storage:/app/cognee/.data_storage
     depends_on:
       cognee-postgres:
         condition: service_healthy
