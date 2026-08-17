@@ -14,9 +14,9 @@ services:
       - LLM_MODEL=openrouter/deepseek/deepseek-v4-pro-0813
       - LLM_ENDPOINT=https://openrouter.ai/api/v1
       - LLM_API_KEY=${LLM_API_KEY}
-      # Embeddings: Voyage AI voyage-4-large (OpenAI-compatible endpoint)
+      # Embeddings: Voyage AI voyage-4-large via the param-stripping sidecar
       - EMBEDDING_PROVIDER=openai_compatible
-      - EMBEDDING_ENDPOINT=https://api.voyageai.com/v1
+      - EMBEDDING_ENDPOINT=http://voyage-proxy:8000/v1
       - EMBEDDING_MODEL=voyage-4-large
       - EMBEDDING_API_KEY=${VOYAGE_API_KEY}
       - EMBEDDING_DIMENSIONS=1024
@@ -37,7 +37,13 @@ services:
     volumes:
       - /srv/cognee/data:/app/.cognee_system
     depends_on:
-      cognee-postgres:
+  voyage-proxy:
+    build: ./voyage-proxy
+    restart: always
+    environment:
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
+
+  cognee-postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
