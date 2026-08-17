@@ -83,6 +83,8 @@ services:
   cognee-postgres:
     image: pgvector/pgvector:pg17
     restart: always
+    # 4 gunicorn workers + improve pipelines exhaust the 100-connection default
+    command: postgres -c max_connections=300
     environment:
       - POSTGRES_USER=cognee
       - POSTGRES_PASSWORD=${DB_PASSWORD}
