@@ -5,7 +5,7 @@ services:
     # Neo4j handles concurrent access; multiple workers parallelize the blocking
     # remember/entry path. entrypoint.sh hardcodes -w 1, so bypass it.
     entrypoint: ["/app/.venv/bin/gunicorn"]
-    command: ["-w", "8", "-k", "uvicorn.workers.UvicornWorker", "-t", "30000", "--bind=0.0.0.0:8000", "--log-level", "error", "--access-logfile", "-", "--error-logfile", "-", "cognee.api.client:app"]
+    command: ["-w", "12", "-k", "uvicorn.workers.UvicornWorker", "-t", "30000", "--bind=0.0.0.0:8000", "--log-level", "error", "--access-logfile", "-", "--error-logfile", "-", "cognee.api.client:app"]
     environment:
       - HOST=0.0.0.0
       - ENVIRONMENT=production
