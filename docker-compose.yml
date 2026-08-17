@@ -9,9 +9,9 @@ services:
       - REQUIRE_AUTHENTICATION=true
       # Preflight connection test times out against cloud endpoints; skip it
       - COGNEE_SKIP_CONNECTION_TEST=true
-      # LLM: DeepSeek V4 Pro via OpenRouter, provider-pinned to DeepSeek hosting
+      # LLM: DeepSeek V4 Flash via OpenRouter, provider-pinned to DeepSeek hosting
       - LLM_PROVIDER=custom
-      - LLM_MODEL=openrouter/deepseek/deepseek-v4-pro-0813
+      - LLM_MODEL=openrouter/deepseek/deepseek-v4-flash-0731
       - LLM_ENDPOINT=http://llm-proxy:8000/v1
       - LLM_API_KEY=${LLM_API_KEY}
       # Embeddings: Voyage AI voyage-4-large via the param-stripping sidecar

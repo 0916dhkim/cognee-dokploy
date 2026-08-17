@@ -22,6 +22,7 @@ async def proxy(path: str, request: Request):
             body = None
     if path.endswith("chat/completions") and isinstance(body, dict):
         body["provider"] = PROVIDER_PIN
+        body["reasoning"] = {"effort": "max"}
     headers = {"Authorization": f"Bearer {API_KEY}"}
     async with httpx.AsyncClient(timeout=300) as client:
         if body is not None:
