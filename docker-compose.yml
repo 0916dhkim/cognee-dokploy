@@ -2,10 +2,6 @@ services:
   cognee:
     image: cognee/cognee:1.4.2
     restart: always
-    # entrypoint.sh hardcodes -w 1; bypass it so we control the worker count.
-    # Single worker serializes the blocking remember/entry path (~1 rps).
-    entrypoint: ["/app/.venv/bin/gunicorn"]
-    command: ["-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-t", "30000", "--bind=0.0.0.0:8000", "--log-level", "error", "--access-logfile", "-", "--error-logfile", "-", "cognee.api.client:app"]
     environment:
       - HOST=0.0.0.0
       - ENVIRONMENT=production
