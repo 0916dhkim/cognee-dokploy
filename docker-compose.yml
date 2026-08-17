@@ -2,6 +2,10 @@ services:
   cognee:
     image: cognee/cognee:1.4.2
     restart: always
+    # Neo4j handles concurrent access; multiple workers parallelize the blocking
+    # remember/entry path. entrypoint.sh hardcodes -w 1, so bypass it.
+    entrypoint: ["/app/.venv/bin/gunicorn"]
+    command: ["-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-t", "30000", "--bind=0.0.0.0:8000", "--log-level", "error", "--access-logfile", "-", "--error-logfile", "-", "cognee.api.client:app"]
     environment:
       - HOST=0.0.0.0
       - ENVIRONMENT=production
@@ -33,7 +37,10 @@ services:
       - VECTOR_DB_NAME=cognee_db
       - VECTOR_DB_USERNAME=cognee
       - VECTOR_DB_PASSWORD=${DB_PASSWORD}
-      - GRAPH_DATABASE_PROVIDER=kuzu
+      - GRAPH_DATABASE_PROVIDER=neo4j
+      - GRAPH_DATABASE_URL=bolt://neo4j:7687
+      - GRAPH_DATABASE_USERNAME=neo4j
+      - GRAPH_DATABASE_PASSWORD=${NEO4J_PASSWORD}
     volumes:
       - /srv/cognee/data:/app/cognee/.cognee_system
       - /srv/cognee/data-storage:/app/cognee/.data_storage
@@ -46,6 +53,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  neo4j:
+    image: neo4j:5.26
+    restart: always
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_server_memory_heap_max__size=1G
+    volumes:
+      - /srv/cognee/neo4j:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   voyage-proxy:
     build: ./voyage-proxy
