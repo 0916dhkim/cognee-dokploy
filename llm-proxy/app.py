@@ -22,8 +22,14 @@ async def proxy(path: str, request: Request):
         except Exception:
             body = None
     if path.endswith("chat/completions") and isinstance(body, dict):
-        body["provider"] = PROVIDER_PIN
-        body["reasoning"] = {"effort": "max"}
+        model = str(body.get("model", ""))
+        if "minimax" in model:
+            # Extraction: MiniMax M3 on Venice (~5-8s, near-zero hidden reasoning tokens).
+            body["provider"] = {"order": ["Venice"], "allow_fallbacks": False}
+        else:
+            # Curator/summarization/recall: DeepSeek V4 Flash at max reasoning.
+            body["provider"] = PROVIDER_PIN
+            body["reasoning"] = {"effort": "max"}
     headers = {"Authorization": f"Bearer {API_KEY}"}
     t0 = time.time()
     async with httpx.AsyncClient(timeout=300) as client:
