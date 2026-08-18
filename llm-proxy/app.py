@@ -1,5 +1,6 @@
 import os
 import time
+from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
@@ -10,11 +11,20 @@ API_KEY = os.environ["LLM_API_KEY"]
 # Route every completion to DeepSeek's official hosting; no fallbacks.
 PROVIDER_PIN = {"order": ["DeepSeek"], "allow_fallbacks": False}
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with httpx.AsyncClient(timeout=300) as client:
+        app.state.client = client
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.api_route("/{path:path}", methods=["POST", "GET"])
 async def proxy(path: str, request: Request):
+    client: httpx.AsyncClient = request.app.state.client
     body = None
     if request.method == "POST":
         try:
@@ -41,11 +51,10 @@ async def proxy(path: str, request: Request):
             body["reasoning"] = {"effort": "max"}
     headers = {"Authorization": f"Bearer {API_KEY}"}
     t0 = time.time()
-    async with httpx.AsyncClient(timeout=300) as client:
-        if body is not None:
-            resp = await client.post(f"{UPSTREAM}/{path}", json=body, headers=headers)
-        else:
-            resp = await client.get(f"{UPSTREAM}/{path}", headers=headers)
+    if body is not None:
+        resp = await client.post(f"{UPSTREAM}/{path}", json=body, headers=headers)
+    else:
+        resp = await client.get(f"{UPSTREAM}/{path}", headers=headers)
     dt = time.time() - t0
     in_chars = sum(len(str(m.get("content", ""))) for m in body.get("messages", [])) if isinstance(body, dict) else 0
     out_chars = len(resp.content)

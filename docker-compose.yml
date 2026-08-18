@@ -2,10 +2,8 @@ services:
   cognee:
     image: cognee/cognee:1.4.2
     restart: always
-    # Neo4j handles concurrent access; multiple workers parallelize the blocking
-    # remember/entry path. entrypoint.sh hardcodes -w 1, so bypass it.
-    entrypoint: ["/app/.venv/bin/gunicorn"]
-    command: ["-w", "12", "-k", "uvicorn.workers.UvicornWorker", "-t", "30000", "--bind=0.0.0.0:8000", "--log-level", "error", "--access-logfile", "-", "--error-logfile", "-", "cognee.api.client:app"]
+    # Keep the image's single worker. Improve pipelines already fan out internally;
+    # extra web workers multiply expensive graph pipelines and database contention.
     environment:
       - HOST=0.0.0.0
       - ENVIRONMENT=production
@@ -92,7 +90,7 @@ services:
   cognee-postgres:
     image: pgvector/pgvector:pg17
     restart: always
-    # 4 gunicorn workers + improve pipelines exhaust the 100-connection default
+    # Improve pipelines can still fan out internally and exhaust the default.
     command: postgres -c max_connections=300
     environment:
       - POSTGRES_USER=cognee
