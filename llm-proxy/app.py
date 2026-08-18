@@ -23,6 +23,11 @@ async def proxy(path: str, request: Request):
             body = None
     if path.endswith("chat/completions") and isinstance(body, dict):
         model = str(body.get("model", ""))
+        # Cognee prefixes models with "openrouter/" to force litellm routing;
+        # OpenRouter expects the bare slug.
+        if model.startswith("openrouter/"):
+            model = model[len("openrouter/"):]
+            body["model"] = model
         if "minimax" in model:
             # Extraction: MiniMax M3 on Venice (~5-8s, near-zero hidden reasoning tokens).
             body["provider"] = {"order": ["Venice"], "allow_fallbacks": False}

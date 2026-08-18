@@ -20,8 +20,10 @@ services:
       - LLM_API_KEY=${LLM_API_KEY}
       # Extraction stage: MiniMax M3 via Venice (benchmarked ~5-8s vs 28s for
       # flash@low, near-zero hidden reasoning tokens). Curator/recall stay on flash@max.
+      # openrouter/ prefix forces litellm to route through the proxy instead of
+      # its native minimax adapter (which rejects unknown model names).
       - LLM_EXTRACTION_PROVIDER=custom
-      - LLM_EXTRACTION_MODEL=minimax/minimax-m3
+      - LLM_EXTRACTION_MODEL=openrouter/minimax/minimax-m3
       - LLM_EXTRACTION_ENDPOINT=http://llm-proxy:8000/v1
       - LLM_EXTRACTION_API_KEY=${LLM_API_KEY}
       # Embeddings: Voyage AI voyage-4-large via the param-stripping sidecar
