@@ -18,8 +18,8 @@ services:
       - LLM_MODEL=openrouter/deepseek/deepseek-v4-flash-0731
       - LLM_ENDPOINT=http://llm-proxy:8000/v1
       - LLM_API_KEY=${LLM_API_KEY}
-      # Extraction stage: MiniMax M3 via Venice (benchmarked ~5-8s vs 28s for
-      # flash@low, near-zero hidden reasoning tokens). Curator/recall stay on flash@max.
+      # Extraction stage: MiniMax M3 via structured-output-capable providers.
+      # Curator/recall stay on flash@max.
       # openrouter/ prefix forces litellm to route through the proxy instead of
       # its native minimax adapter (which rejects unknown model names).
       - LLM_EXTRACTION_PROVIDER=custom

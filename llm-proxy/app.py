@@ -29,8 +29,12 @@ async def proxy(path: str, request: Request):
             model = model[len("openrouter/"):]
             body["model"] = model
         if "minimax" in model:
-            # Extraction: MiniMax M3 on Venice (~5-8s, near-zero hidden reasoning tokens).
-            body["provider"] = {"order": ["Venice"], "allow_fallbacks": False}
+            # Cognee uses response_format for extraction. Venice does not support it,
+            # so use providers that advertise structured-output support.
+            body["provider"] = {
+                "order": ["CoreWeave", "Together"],
+                "allow_fallbacks": False,
+            }
         else:
             # Curator/summarization/recall: DeepSeek V4 Flash at max reasoning.
             body["provider"] = PROVIDER_PIN
